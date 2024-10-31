@@ -1,52 +1,64 @@
-let currentCalculation = '';
-
-// Funzione per aprire la calcolatrice con input appropriati
+// Funzione per aprire la calcolatrice specifica
 function openCalculator(type) {
-    currentCalculation = type;
     const modal = document.getElementById("calculatorModal");
     const title = document.getElementById("calculatorTitle");
-    const instruction = document.getElementById("calculatorInstruction");
-    const inputsContainer = document.getElementById("inputsContainer");
+    const content = document.getElementById("calculatorContent");
+    const result = document.getElementById("result");
 
-    inputsContainer.innerHTML = ''; // Pulisce il contenitore degli input
+    // Pulizia dei contenuti della modale
+    content.innerHTML = '';
+    result.innerHTML = '';
 
+    // Assegnazione titolo e contenuto dinamico
     switch (type) {
         case 'resistance':
-            title.innerText = 'Calcola Resistenza';
-            instruction.innerText = 'Inserisci Voltaggio (V) e Corrente (I):';
-            inputsContainer.innerHTML = `
-                <input type="number" id="voltage" placeholder="Voltaggio (V)" class="form-control mt-2">
-                <input type="number" id="current" placeholder="Corrente (I)" class="form-control mt-2">
+            title.textContent = "Calcola Resistenza";
+            content.innerHTML = `
+                <label for="current">Corrente (I in A):</label>
+                <input type="number" id="current" placeholder="Inserisci corrente">
+                <label for="voltage">Voltaggio (V in V):</label>
+                <input type="number" id="voltage" placeholder="Inserisci voltaggio">
+                <button onclick="calculateResistance()">Calcola</button>
             `;
             break;
         case 'voltage':
-            title.innerText = 'Calcola Voltaggio';
-            instruction.innerText = 'Inserisci Corrente (I) e Resistenza (R):';
-            inputsContainer.innerHTML = `
-                <input type="number" id="current" placeholder="Corrente (I)" class="form-control mt-2">
-                <input type="number" id="resistance" placeholder="Resistenza (R)" class="form-control mt-2">
+            title.textContent = "Calcola Voltaggio";
+            content.innerHTML = `
+                <label for="current">Corrente (I in A):</label>
+                <input type="number" id="current" placeholder="Inserisci corrente">
+                <label for="resistance">Resistenza (R in Ω):</label>
+                <input type="number" id="resistance" placeholder="Inserisci resistenza">
+                <button onclick="calculateVoltage()">Calcola</button>
             `;
             break;
         case 'current':
-            title.innerText = 'Calcola Corrente';
-            instruction.innerText = 'Inserisci Voltaggio (V) e Resistenza (R):';
-            inputsContainer.innerHTML = `
-                <input type="number" id="voltage" placeholder="Voltaggio (V)" class="form-control mt-2">
-                <input type="number" id="resistance" placeholder="Resistenza (R)" class="form-control mt-2">
+            title.textContent = "Calcola Corrente";
+            content.innerHTML = `
+                <label for="voltage">Voltaggio (V in V):</label>
+                <input type="number" id="voltage" placeholder="Inserisci voltaggio">
+                <label for="resistance">Resistenza (R in Ω):</label>
+                <input type="number" id="resistance" placeholder="Inserisci resistenza">
+                <button onclick="calculateCurrent()">Calcola</button>
             `;
             break;
         case 'series':
-            title.innerText = 'Calcola Resistenza in Serie';
-            instruction.innerText = 'Inserisci le resistenze in serie separate da virgola:';
-            inputsContainer.innerHTML = `
-                <input type="text" id="resistancesSeries" placeholder="Es. 10,20,30" class="form-control mt-2">
+            title.textContent = "Resistenza in Serie";
+            content.innerHTML = `
+                <label for="resistance1">Resistenza 1 (R₁ in Ω):</label>
+                <input type="number" id="resistance1" placeholder="Inserisci resistenza 1">
+                <label for="resistance2">Resistenza 2 (R₂ in Ω):</label>
+                <input type="number" id="resistance2" placeholder="Inserisci resistenza 2">
+                <button onclick="calculateSeriesResistance()">Calcola</button>
             `;
             break;
         case 'parallel':
-            title.innerText = 'Calcola Resistenza in Parallelo';
-            instruction.innerText = 'Inserisci le resistenze in parallelo separate da virgola:';
-            inputsContainer.innerHTML = `
-                <input type="text" id="resistancesParallel" placeholder="Es. 10,20,30" class="form-control mt-2">
+            title.textContent = "Resistenza in Parallelo";
+            content.innerHTML = `
+                <label for="resistance1">Resistenza 1 (R₁ in Ω):</label>
+                <input type="number" id="resistance1" placeholder="Inserisci resistenza 1">
+                <label for="resistance2">Resistenza 2 (R₂ in Ω):</label>
+                <input type="number" id="resistance2" placeholder="Inserisci resistenza 2">
+                <button onclick="calculateParallelResistance()">Calcola</button>
             `;
             break;
     }
@@ -56,49 +68,77 @@ function openCalculator(type) {
 
 // Funzione per chiudere la calcolatrice
 function closeCalculator() {
-    document.getElementById("calculatorModal").style.display = "none";
-    document.getElementById("result").innerHTML = '';
+    const modal = document.getElementById("calculatorModal");
+    modal.style.display = "none";
 }
 
-// Funzione per eseguire il calcolo
-function performCalculation() {
-    let result = '';
-    
-    switch (currentCalculation) {
-        case 'resistance':
-            const voltageR = parseFloat(document.getElementById("voltage").value);
-            const currentR = parseFloat(document.getElementById("current").value);
-            result = currentR ? `Resistenza = ${(voltageR / currentR).toFixed(2)} Ω` : 'Errore nei dati.';
-            break;
-        case 'voltage':
-            const currentV = parseFloat(document.getElementById("current").value);
-            const resistanceV = parseFloat(document.getElementById("resistance").value);
-            result = resistanceV ? `Voltaggio = ${(currentV * resistanceV).toFixed(2)} V` : 'Errore nei dati.';
-            break;
-        case 'current':
-            const voltageC = parseFloat(document.getElementById("voltage").value);
-            const resistanceC = parseFloat(document.getElementById("resistance").value);
-            result = resistanceC ? `Corrente = ${(voltageC / resistanceC).toFixed(2)} A` : 'Errore nei dati.';
-            break;
-        case 'series':
-            const resistancesSeries = document.getElementById("resistancesSeries").value.split(',').map(Number);
-            if (resistancesSeries.every(r => r >= 0)) {
-                const totalResistance = resistancesSeries.reduce((acc, r) => acc + r, 0);
-                result = `Resistenza Totale in Serie = ${totalResistance.toFixed(2)} Ω`;
-            } else {
-                result = 'Per favore, inserisci valori positivi per le resistenze.';
-            }
-            break;
-        case 'parallel':
-            const resistancesParallel = document.getElementById("resistancesParallel").value.split(',').map(Number);
-            if (resistancesParallel.every(r => r > 0)) {
-                const totalReciprocal = resistancesParallel.reduce((acc, r) => acc + (1 / r), 0);
-                result = `Resistenza Totale in Parallelo = ${(1 / totalReciprocal).toFixed(2)} Ω`;
-            } else {
-                result = 'Per favore, inserisci valori positivi per le resistenze.';
-            }
-            break;
+// Funzioni di calcolo con controllo resistenza negativa
+function calculateResistance() {
+    const current = parseFloat(document.getElementById("current").value);
+    const voltage = parseFloat(document.getElementById("voltage").value);
+    const result = document.getElementById("result");
+
+    if (current <= 0) {
+        result.innerHTML = "Errore: la corrente deve essere positiva.";
+        return;
     }
 
-    document.getElementById("result").innerHTML = result;
+    const resistance = voltage / current;
+    result.innerHTML = `Resistenza = ${resistance.toFixed(2)} Ω`;
+}
+
+function calculateVoltage() {
+    const current = parseFloat(document.getElementById("current").value);
+    const resistance = parseFloat(document.getElementById("resistance").value);
+    const result = document.getElementById("result");
+
+    if (resistance < 0) {
+        result.innerHTML = "Errore: la resistenza non può essere negativa.";
+        return;
+    }
+
+    const voltage = current * resistance;
+    result.innerHTML = `Voltaggio = ${voltage.toFixed(2)} V`;
+}
+
+function calculateCurrent() {
+    const voltage = parseFloat(document.getElementById("voltage").value);
+    const resistance = parseFloat(document.getElementById("resistance").value);
+    const result = document.getElementById("result");
+
+    if (resistance < 0) {
+        result.innerHTML = "Errore: la resistenza non può essere negativa.";
+        return;
+    }
+
+    const current = voltage / resistance;
+    result.innerHTML = `Corrente = ${current.toFixed(2)} A`;
+}
+
+function calculateSeriesResistance() {
+    const resistance1 = parseFloat(document.getElementById("resistance1").value);
+    const resistance2 = parseFloat(document.getElementById("resistance2").value);
+    const result = document.getElementById("result");
+
+    if (resistance1 < 0 || resistance2 < 0) {
+        result.innerHTML = "Errore: le resistenze non possono essere negative.";
+        return;
+    }
+
+    const totalResistance = resistance1 + resistance2;
+    result.innerHTML = `Resistenza in Serie = ${totalResistance.toFixed(2)} Ω`;
+}
+
+function calculateParallelResistance() {
+    const resistance1 = parseFloat(document.getElementById("resistance1").value);
+    const resistance2 = parseFloat(document.getElementById("resistance2").value);
+    const result = document.getElementById("result");
+
+    if (resistance1 < 0 || resistance2 < 0) {
+        result.innerHTML = "Errore: le resistenze non possono essere negative.";
+        return;
+    }
+
+    const totalResistance = 1 / ((1 / resistance1) + (1 / resistance2));
+    result.innerHTML = `Resistenza in Parallelo = ${totalResistance.toFixed(2)} Ω`;
 }
